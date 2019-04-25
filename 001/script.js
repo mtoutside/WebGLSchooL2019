@@ -72,12 +72,13 @@
 				// BOX100個
 				let BOX = [];
 				let count = 0;
-        geometry = new THREE.BoxGeometry(1.0, 1.0, 1.0);
+				const boxSize = 1.0;
+        geometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
         material = new THREE.MeshPhongMaterial(MATERIAL_PARAM);
 				for(let i = 0; i < 10; i++) {
 					for(let j = 0; j < 10; j++) {
 						BOX[count] = new THREE.Mesh(geometry, material);
-						BOX[count].position.set(i - 5 , j - 5, 0.5);
+						BOX[count].position.set(i - (boxSize * 5) + boxSize / 2 , j - (boxSize * 5) + boxSize / 2, 0.5);
 						scene.add(BOX[count]);
 						count++;
 					}
