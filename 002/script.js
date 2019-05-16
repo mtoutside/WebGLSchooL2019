@@ -1,13 +1,3 @@
-
-// = 012 ======================================================================
-// three.js を使っているかどうかにかかわらず、3D プログラミングとはそもそもかな
-// り難易度の高いジャンルです。
-// その中でも、特に最初のころに引っかかりやすいのが「回転や位置」の扱いです。
-// ここではそれを体験する意味も含め、グループの使い方を知っておきましょう。この
-// グループという概念を用いることで、three.js ではオブジェクトの制御をかなり簡単
-// に行うことができるようになっています。
-// ============================================================================
-
 (() => {
     // variables
     let canvasWidth  = null;
@@ -23,11 +13,8 @@
     let geometry;
     let material;
     let materialPoint;
-    let plane;
     let box;
-    let sphere;
-    let cone;
-    let torus;
+    let cirlcle;
     let secondHand;
     let minHand;
     let hourHand;
@@ -78,68 +65,47 @@
         renderer.setClearColor(new THREE.Color(RENDERER_PARAM.clearColor));
         renderer.setSize(canvasWidth, canvasHeight);
         targetDOM.appendChild(renderer.domElement);
-        // controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-        // - グループを使う ---------------------------------------------------
-        // three.js のオブジェクトは、グループにひとまとめにすることができます。
-        // グループを使わないと実現できない挙動、というのも一部にはありますので、
-        // ここで使い方だけでもしっかり覚えておきましょう。
-        // 特に、グループに追加したことによって「回転や平行移動の概念が変わる」
-        // ということが非常に重要です。
-        // --------------------------------------------------------------------
+			// material
+        material = new THREE.MeshPhongMaterial(MATERIAL_PARAM);
+        // materialPoint = new THREE.PointsMaterial(MATERIAL_PARAM_POINT);
+
+			// circle
+			geometry = new THREE.CircleGeometry( 5, 32, 5.0 );
+			circle = new THREE.Mesh( geometry, material );
+			material.side = THREE.DoubleSide;
+			circle.rotation.x = 90 * (Math.PI / 180);
+			circle.position.y = -0.1;
+			scene.add( circle );
 
         // seconds
         secondHand = new THREE.Group();
-
-        // material and geometory
-        material = new THREE.MeshPhongMaterial(MATERIAL_PARAM);
-        materialPoint = new THREE.PointsMaterial(MATERIAL_PARAM_POINT);
-
-        // box
-        geometry = new THREE.BoxGeometry(7.0, 1.0, 0.1);
+        geometry = new THREE.BoxGeometry(7.0, 0.1, 0.1);
         box = new THREE.Mesh(geometry, material);
         box.position.x = 3.5;
-        box.position.y = -6.0;
-        secondHand.add(box); // group に add する @@@
-				secondHand.position.y = 7.0;
-
-        // group をシーンに加える @@@
+        box.position.y = 0.25;
+        secondHand.add(box);
         scene.add(secondHand);
 
         // minuets
         minHand = new THREE.Group();
-
-        // material and geometory
-        material = new THREE.MeshPhongMaterial(0xc0ffee);
-        materialPoint = new THREE.PointsMaterial(MATERIAL_PARAM_POINT);
-
-        // box
-        geometry = new THREE.BoxGeometry(5.0, 1.0, 0.1);
+        geometry = new THREE.BoxGeometry(5.0, 0.1, 0.1);
         box = new THREE.Mesh(geometry, material);
         box.position.x = 2.5;
-        box.position.y = 1.0;
-        minHand.add(box); // group に add する @@@
-
-        // group をシーンに加える @@@
+        box.position.y = 0.15;
+        minHand.add(box);
         scene.add(minHand);
 
         // hour
         hourHand = new THREE.Group();
-
-        // material and geometory
-        material = new THREE.MeshPhongMaterial(MATERIAL_PARAM);
-        materialPoint = new THREE.PointsMaterial(MATERIAL_PARAM_POINT);
-
-        // box
-        geometry = new THREE.BoxGeometry(3.0, 1.0, 0.1);
+        geometry = new THREE.BoxGeometry(3.0, 0.1, 0.1);
         box = new THREE.Mesh(geometry, material);
         box.position.x = 1.5;
-        box.position.y = 2.0;
-        hourHand.add(box); // group に add する @@@
+        box.position.y = 0.05;
+        hourHand.add(box);
 				hourHand.position.x = 0.0;
 				hourHand.position.z = 0.0;
-
-        // group をシーンに加える @@@
         scene.add(hourHand);
 
         // lights
