@@ -15,6 +15,7 @@
     let materialPoint;
     let box;
     let cirlcle;
+    let dial;
     let secondHand;
     let minHand;
     let hourHand;
@@ -67,6 +68,26 @@
         targetDOM.appendChild(renderer.domElement);
         controls = new THREE.OrbitControls(camera, renderer.domElement);
 
+			// dial
+			dial = new THREE.Group();
+
+			for (let i = 0; i < 12; i++) {
+          // 直方体を作成
+           material = new THREE.MeshToonMaterial(MATERIAL_PARAM);
+           geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+           box = new THREE.Mesh(geometry, material);
+          // 配置座標を計算
+          const radian = (i / 12) * Math.PI * 2;
+          box.position.set(
+            5 * Math.cos(radian), // X座標
+            0, // Y座標
+            5 * Math.sin(radian) // Z座標
+          );
+          // グループに追加する
+          dial.add(box);
+        }
+			scene.add(dial);
+
 			// material
         material = new THREE.MeshPhongMaterial(MATERIAL_PARAM);
         // materialPoint = new THREE.PointsMaterial(MATERIAL_PARAM_POINT);
@@ -77,10 +98,11 @@
 			material.side = THREE.DoubleSide;
 			circle.rotation.x = 90 * (Math.PI / 180);
 			circle.position.y = -0.1;
-			scene.add( circle );
+			// scene.add( circle );
 
-        // seconds
-        secondHand = new THREE.Group();
+
+			// seconds
+			secondHand = new THREE.Group();
         geometry = new THREE.BoxGeometry(7.0, 0.1, 0.1);
         box = new THREE.Mesh(geometry, material);
         box.position.x = 3.5;
