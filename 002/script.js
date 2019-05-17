@@ -72,56 +72,44 @@
 			dial = new THREE.Group();
 
 			for (let i = 0; i < 12; i++) {
-          // 直方体を作成
-           material = new THREE.MeshToonMaterial(MATERIAL_PARAM);
-           geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-           box = new THREE.Mesh(geometry, material);
-          // 配置座標を計算
-          const radian = (i / 12) * Math.PI * 2;
-          box.position.set(
-            5 * Math.cos(radian), // X座標
-            0, // Y座標
-            5 * Math.sin(radian) // Z座標
-          );
-          // グループに追加する
-          dial.add(box);
-        }
+				material = new THREE.MeshToonMaterial(MATERIAL_PARAM);
+				geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+				box = new THREE.Mesh(geometry, material);
+				const radian = (i / 12) * Math.PI * 2;
+
+				box.position.set(
+					5 * Math.cos(radian), // X
+					0, // Y
+					5 * Math.sin(radian) // Z
+				);
+				dial.add(box);
+			}
 			scene.add(dial);
 
 			// material
-        material = new THREE.MeshPhongMaterial(MATERIAL_PARAM);
-        // materialPoint = new THREE.PointsMaterial(MATERIAL_PARAM_POINT);
-
-			// circle
-			geometry = new THREE.CircleGeometry( 5, 32, 5.0 );
-			circle = new THREE.Mesh( geometry, material );
-			material.side = THREE.DoubleSide;
-			circle.rotation.x = 90 * (Math.PI / 180);
-			circle.position.y = -0.1;
-			// scene.add( circle );
-
+			material = new THREE.MeshPhongMaterial(MATERIAL_PARAM);
 
 			// seconds
 			secondHand = new THREE.Group();
-        geometry = new THREE.BoxGeometry(7.0, 0.1, 0.1);
-        box = new THREE.Mesh(geometry, material);
-        box.position.x = 3.5;
-        box.position.y = 0.25;
-        secondHand.add(box);
-        scene.add(secondHand);
+			geometry = new THREE.BoxGeometry(7.0, 0.1, 0.1);
+			box = new THREE.Mesh(geometry, material);
+			box.position.x = 3.5;
+			box.position.y = 0.25;
+			secondHand.add(box);
+			scene.add(secondHand);
 
-        // minuets
-        minHand = new THREE.Group();
-        geometry = new THREE.BoxGeometry(5.0, 0.1, 0.1);
-        box = new THREE.Mesh(geometry, material);
-        box.position.x = 2.5;
-        box.position.y = 0.15;
-        minHand.add(box);
-        scene.add(minHand);
+			// minuets
+			minHand = new THREE.Group();
+			geometry = new THREE.BoxGeometry(5.0, 0.1, 0.1);
+			box = new THREE.Mesh(geometry, material);
+			box.position.x = 2.5;
+			box.position.y = 0.15;
+			minHand.add(box);
+			scene.add(minHand);
 
-        // hour
-        hourHand = new THREE.Group();
-        geometry = new THREE.BoxGeometry(3.0, 0.1, 0.1);
+			// hour
+			hourHand = new THREE.Group();
+			geometry = new THREE.BoxGeometry(3.0, 0.1, 0.1);
         box = new THREE.Mesh(geometry, material);
         box.position.x = 1.5;
         box.position.y = 0.05;
