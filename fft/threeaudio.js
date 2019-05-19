@@ -15,7 +15,7 @@
 	let geometry;
 	let material;
 	let mesh;
-	const fftSize = 32;
+	const fftSize = 128;
 	let axesHelper;
 	// constant variables
 	const CAMERA_PARAM = {
@@ -78,7 +78,7 @@
 
 
 		uniforms = {
-			tAudioData: { value: new THREE.DataTexture( analyser.data, fftSize / 2, 1, THREE.LuminanceFormat ) }
+			tAudioData: { value: new THREE.DataTexture( analyser.data, fftSize , 1, THREE.LuminanceFormat ) }
 		};
 		material = new THREE.ShaderMaterial( {
 			uniforms: uniforms,
@@ -92,11 +92,18 @@
 		const boxSize = 1;
 		geometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
 		material = new THREE.MeshNormalMaterial();
-		for(let i = 0; i < fftSize / 2; i++) {
-			box[i] = new THREE.Mesh(geometry, material);
-			box[i].position.set(0, 0, i + i * boxSize / 4);
-			scene.add(box[i]);
+
+		let count = 0;
+		for(let i = 0; i < fftSize / 2 ; i++) {
+			for(let j = 0; j < fftSize / 8; j++) {
+				box[count] = new THREE.Mesh(geometry, material);
+				box[count].position.set(j - (boxSize * (fftSize / 8 / 2)) + j * boxSize / 4, 0, i + i * boxSize / 4);
+				scene.add(box[count]);
+				count++;
+			}
 		}
+		console.log(box);
+		console.log(analyser.data);
 		axesHelper = new THREE.AxesHelper(5.0);
 		scene.add(axesHelper);
 
@@ -114,6 +121,7 @@
 				isDown = false;
 			}
 		}, false);
+
 		window.addEventListener('resize', () => {
 			renderer.setSize(window.innerWidth, window.innerHeight);
 			camera.aspect = window.innerWidth / window.innerHeight;
@@ -130,8 +138,8 @@
 		analyser.getFrequencyData();
 		uniforms.tAudioData.value.needsUpdate = true;
 		renderer.render(scene, camera);
-		console.log(analyser.data[5]);
-		for(let i = 0; i < fftSize / 2; i++) {
+		// console.log(analyser.data[5]);
+		for(let i in box) {
 			box[i].position.y = analyser.data[i] * 0.01;
 		}
 }
