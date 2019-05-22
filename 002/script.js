@@ -19,16 +19,17 @@
     let secondHand;
     let minHand;
     let hourHand;
+	  let posX, posY, posZ;
     let directionalLight;
     let ambientLight;
     let axesHelper;
     // constant variables
     const RENDERER_PARAM = {
-        clearColor: 0x333333
+        clearColor: 0x671B8C
     };
     const MATERIAL_PARAM = {
         color: 0xbada55,
-        specular: 0xffffff
+        specular: 0x6D9BDF
     };
     const MATERIAL_PARAM_POINT = {
         color: 0xbada55,
@@ -72,8 +73,9 @@
 			dial = new THREE.Group();
 
 			for (let i = 0; i < 12; i++) {
-				material = new THREE.MeshToonMaterial(MATERIAL_PARAM);
-				geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+				material = new THREE.MeshPhongMaterial(MATERIAL_PARAM);
+				[posX, posY, posZ] = [0.5, 0.5, 0.5];
+				geometry = new THREE.BoxGeometry(posX, posY, posZ);
 				box = new THREE.Mesh(geometry, material);
 				const radian = (i / 12) * Math.PI * 2;
 
@@ -91,18 +93,19 @@
 
 			// seconds
 			secondHand = new THREE.Group();
-			geometry = new THREE.BoxGeometry(7.0, 0.1, 0.1);
+			[posX, posY, posZ] = [5.5, 0.1, 0.1];
+			geometry = new THREE.BoxGeometry(posX, posY, posZ);
 			box = new THREE.Mesh(geometry, material);
-			box.position.x = 3.5;
-			box.position.y = 0.25;
+			box.position.x = posX / 2;
+			box.position.y = posY / 2;
 			secondHand.add(box);
 			scene.add(secondHand);
 
 			// minuets
 			minHand = new THREE.Group();
-			geometry = new THREE.BoxGeometry(5.0, 0.1, 0.1);
+			geometry = new THREE.BoxGeometry(4.5, 0.1, 0.1);
 			box = new THREE.Mesh(geometry, material);
-			box.position.x = 2.5;
+			box.position.x = 4.5 / 2;
 			box.position.y = 0.15;
 			minHand.add(box);
 			scene.add(minHand);
