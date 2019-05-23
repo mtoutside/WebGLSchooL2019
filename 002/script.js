@@ -103,38 +103,41 @@
 
 			// minuets
 			minHand = new THREE.Group();
-			geometry = new THREE.BoxGeometry(4.5, 0.1, 0.1);
+			[posX, posY, posZ] = [4.5, 0.1, 0.1];
+			geometry = new THREE.BoxGeometry(posX, posY, posZ);
 			box = new THREE.Mesh(geometry, material);
-			box.position.x = 4.5 / 2;
-			box.position.y = 0.15;
+			box.position.x = posX / 2;
+			box.position.y = posY / 2;
 			minHand.add(box);
 			scene.add(minHand);
 
 			// hour
 			hourHand = new THREE.Group();
-			geometry = new THREE.BoxGeometry(3.0, 0.1, 0.1);
+			[posX, posY, posZ] = [3.0, 0.1, 0.1];
+			geometry = new THREE.BoxGeometry(posX, posY, posZ);
         box = new THREE.Mesh(geometry, material);
-        box.position.x = 1.5;
-        box.position.y = 0.05;
-        hourHand.add(box);
-				hourHand.position.x = 0.0;
-				hourHand.position.z = 0.0;
-        scene.add(hourHand);
+			box.position.x = posX / 2;
+			box.position.y = posY / 2;
 
-        // lights
-        directionalLight = new THREE.DirectionalLight(
-            DIRECTIONAL_LIGHT_PARAM.color,
-            DIRECTIONAL_LIGHT_PARAM.intensity
-        );
-        directionalLight.position.x = DIRECTIONAL_LIGHT_PARAM.x;
-        directionalLight.position.y = DIRECTIONAL_LIGHT_PARAM.y;
-        directionalLight.position.z = DIRECTIONAL_LIGHT_PARAM.z;
-        scene.add(directionalLight);
-        ambientLight = new THREE.AmbientLight(
-            AMBIENT_LIGHT_PARAM.color,
-            AMBIENT_LIGHT_PARAM.intensity
-        );
-        scene.add(ambientLight);
+			hourHand.add(box);
+			hourHand.position.x = 0.0;
+			hourHand.position.z = 0.0;
+			scene.add(hourHand);
+
+			// lights
+			directionalLight = new THREE.DirectionalLight(
+				DIRECTIONAL_LIGHT_PARAM.color,
+				DIRECTIONAL_LIGHT_PARAM.intensity
+			);
+			directionalLight.position.x = DIRECTIONAL_LIGHT_PARAM.x;
+			directionalLight.position.y = DIRECTIONAL_LIGHT_PARAM.y;
+			directionalLight.position.z = DIRECTIONAL_LIGHT_PARAM.z;
+			scene.add(directionalLight);
+			ambientLight = new THREE.AmbientLight(
+				AMBIENT_LIGHT_PARAM.color,
+				AMBIENT_LIGHT_PARAM.intensity
+			);
+			scene.add(ambientLight);
 
         // helper
         axesHelper = new THREE.AxesHelper(5.0);
