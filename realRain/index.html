@@ -4,6 +4,7 @@
 	<meta charset="UTF-8">
 	<title>Rain</title>
 	<script src="../lib/three.js"></script>
+	<script src="../lib/OrbitControls.js"></script>
 	<style>
 * {
 	margin: 0;
@@ -13,7 +14,17 @@
 </head>
 <body>
 	<script>
-		let scene, camera, renderer, cloudParticles = [];
+		let scene,
+				camera,
+				renderer,
+				controls,
+				axesHelper,
+				run = true,
+				cloudParticles = [],
+				flash,
+				rain,
+				rainGeo,
+				rainCount = 1500;
 
 		function init() {
 
@@ -23,6 +34,7 @@
 			camera.rotation.x = 1.16;
 			camera.rotation.y = -0.12;
 			camera.rotation.z = 0.27;
+			camera.lookAt(new THREE.Vector3(0.0, 0.0, 0.0));
 
 			ambient = new THREE.AmbientLight(0x555555);
 			scene.add(ambient);
@@ -31,10 +43,43 @@
 			directionalLight.position.set(0, 0, 1);
 			scene.add(directionalLight);
 
+			// flash
+			flash = new THREE.PointLight(0x062d89, 30, 500, 1.7);
+			flash.position.set(200, 300, 100);
+			scene.add(flash);
+
 			renderer = new THREE.WebGLRenderer();
+			scene.fog = new THREE.FogExp2(0x1c1c2a, 0.002);
+			renderer.setClearColor(scene.fog.color);
 			renderer.setSize(window.innerWidth, window.innerHeight);
 			document.body.appendChild(renderer.domElement);
+			controls = new THREE.OrbitControls(camera, renderer.domElement);
 
+			// helper
+        axesHelper = new THREE.AxesHelper(5.0);
+        scene.add(axesHelper);
+
+			// rain
+			rainGeo = new THREE.Geometry();
+			for(let i = 0; i < rainCount; i++) {
+				rainDrop = new THREE.Vector3(
+					Math.random() * 400 - 200,
+					Math.random() * 500 - 250,
+					Math.random() * 400 - 200
+				);
+				rainDrop.velocity = {};
+				rainDrop.velocity = 0;
+				rainGeo.vertices.push(rainDrop);
+			}
+			rainMaterial = new THREE.PointsMaterial({
+				color: 0xaaaaaa,
+				size: 0.1,
+				transparent: true
+			});
+			rain = new THREE.Points(rainGeo, rainMaterial);
+			scene.add(rain);
+
+			// cloud
 			let loader = new THREE.TextureLoader();
 			loader.load("smoke.png", function(texture) {
 
@@ -55,14 +100,42 @@
 					cloud.rotation.y = -0.12;
 					cloud.rotation.z = Math.random() * 360;
 					cloud.material.opacity = 0.6;
-					// cloudParticles.push(cloud);
+					cloudParticles.push(cloud);
 					scene.add(cloud);
 				}
 			});
 		}
 
 		init();
-		renderer.render(scene, camera);
+		animate();
+
+		function animate() {
+
+			cloudParticles.forEach(p => {
+				p.rotation.z -= 0.002;
+			});
+			rainGeo.vertices.forEach(p => {
+				p.velocity -= 0.1 + Math.random() * 0.1;
+				p.y += p.velocity;
+				if(p.y < -200) {
+					p.y = 200;
+					p.velocity = 0;
+				}
+			});
+			rainGeo.verticesNeedUpdate = true;
+			rain.rotation.y += 0.002;
+			if(Math.random() > 0.93 || flash.power > 100) {
+				if(flash.power < 100)
+					flash.position.set(
+						Math.random() * 400,
+						300 + Math.random() * 200,
+						100
+					);
+				flash.power = 50 + Math.random() * 500;
+			}
+			renderer.render(scene, camera);
+			if(run){ requestAnimationFrame(animate);}
+		}
 
 
 	</script>
