@@ -26,9 +26,13 @@
     let prg;        // プログラムオブジェクト
     let position;   // 頂点の位置座標
     let color;      // 頂点の色
+		let feedbackPosition; // GPGPU用
+		let feedbackColor; // GPGPU用
     let index;      // 頂点インデックス
     let VBO;        // Vertex Buffer Object
     let IBO;        // Index Buffer Object
+		let transformOutVBO; // GPGPU用
+		let feedbackInVBO; // GPGPU用
     mat4 = gl3.Math.Mat4;
     qtn  = gl3.Math.Qtn;
 
@@ -96,6 +100,18 @@
         // てみましょう。カリングの原則、カメラに向かって反時計回りを表と判定す
         // る、ということを念頭に考えるのがポイントです。
         // --------------------------------------------------------------------
+
+				// transform feedback object
+				var transformFeedback = gl.createTransformFeedback();
+				gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, transformFeedback);
+
+				// out variable names
+				var outVaryings = ['gl_Position', 'vColor'];
+
+				// transform out shader
+				var vs = create_shader('vs_transformOut');
+				var fs = create_shader('fs_transformOut');
+				var prg = create_program_tf_separate(vs, fs, outVaryings);
         position = [];
         color = [];
         index = [];
@@ -134,8 +150,27 @@
         // インデックスバッファを生成
         IBO = gl3.createIbo(index);
 
-        mMatrix   = mat4.identity(mat4.create()); // モデル座標変換行列
-        vMatrix   = mat4.identity(mat4.create()); // ビュー座標変換行列
+			  // 読み込み・書き出し用のVBO生成
+				transformOutVBO = [
+					gl3.createVbo(position),
+					gl3.createVbo(color)
+				];
+				feedbackInVBO = [
+					createVboFeedback(feedbackPosition),
+					createVboFeedback(feedbackPosition)
+				];
+
+			// glcubic.jsに↓の関数がないので追記
+			function createVboFeedback(data){
+				let vbo = gl.createBuffer();
+				gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.DYNAMIC_COPY);
+				gl.bindBuffer(gl.ARRAY_BUFFER, null);
+				return vbo;
+			}
+
+			mMatrix   = mat4.identity(mat4.create()); // モデル座標変換行列
+			vMatrix   = mat4.identity(mat4.create()); // ビュー座標変換行列
         pMatrix   = mat4.identity(mat4.create()); // プロジェクション座標変換行列
         vpMatrix  = mat4.identity(mat4.create()); // v と p を掛け合わせたもの
         mvpMatrix = mat4.identity(mat4.create()); // m と v と p の全てを掛け合わせたもの
