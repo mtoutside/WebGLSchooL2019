@@ -25,11 +25,9 @@
 	const fragment = `
 		precision highp float;
 
+		uniform float t;
 		uniform float time;
-		uniform float timeShown;
-		uniform float timeInterval;
-		uniform float durationShown;
-		uniform float durationInterval;
+		uniform vec2 uMouse;
 		uniform vec2 resolution;
 		uniform vec2 imageResolution;
 		uniform sampler2D texture1;
@@ -43,48 +41,25 @@
 		}
 
 		void main(void) {
-			// for Shown preload.
-			float stepShown = clamp(timeShown / durationShown, 0.0, 1.0);
-			float stepShownEase = circularOut(stepShown);
-			float stepInterval = clamp(timeInterval / durationInterval, 0.0, 1.0);
-			float stepIntervalEase = circularOut(stepInterval);
+		vec2 nmouse = normalize(uMouse);
+		float mouse = clamp(nmouse.x , 0.0, 1.0);
+
+		float duration = clamp(sin(time), 0.0, 1.0);
+		float duration2 = clamp(cos(time), 0.0, 1.0);
 
 			// for Interval Images
 			vec2 ratio = vec2(
 					min((resolution.x / resolution.y) / (imageResolution.x / imageResolution.y), 1.0),
 					min((resolution.y / resolution.x) / (imageResolution.y / imageResolution.x), 1.0)
 				);
-			vec2 uv1 = vec2(
-					(vUv.x - (((vUv.x * 2.0) - 1.0) * stepShown * 0.0333) - (((vUv.x * 2.0) - 1.0) * stepInterval * 0.0333)) * ratio.x + (1.0 - ratio.x) * 0.5,
-					(vUv.y - (((vUv.y * 2.0) - 1.0) * stepShown * 0.0333) - (((vUv.y * 2.0) - 1.0) * stepInterval * 0.0333)) * ratio.y + (1.0 - ratio.y) * 0.5
-				);
-			vec2 uv2 = vec2(
-					(vUv.x - (((vUv.x * 2.0) - 1.0) * stepInterval * 0.0333)) * ratio.x + (1.0 - ratio.x) * 0.5,
-					(vUv.y - (((vUv.y * 2.0) - 1.0) * stepInterval * 0.0333)) * ratio.y + (1.0 - ratio.y) * 0.5
-				);
-			vec4 texColor1 = texture2D(texture1, uv1);
-			vec4 texColor2 = texture2D(texture2, uv2);
-
-			// calcurate mask
-			float maskBase =
-				((
-					sin(vPosition.y / 616.3) * 2.0
-					+ cos(vPosition.x / 489.2 - 200.0) * 2.0
-					+ sin(vPosition.x / 128.3) * 0.5
-					+ cos(vPosition.y / 214.2) * 0.5
-				) / 5.0 + 1.0) / 2.0;
-			float maskShown = clamp(maskBase + (stepShownEase * 2.0 - 1.0), 0.0, 1.0);
-			maskShown = smoothstep(0.2, 0.8, maskShown);
-			float maskInterval = clamp(maskBase + (stepIntervalEase * 2.0 - 1.0), 0.0, 1.0);
-			float maskInterval1 = 1.0 - smoothstep(0.4, 1.0, maskInterval);
-			float maskInterval2 = smoothstep(0.0, 0.6, maskInterval);
+			vec4 texColor1 = texture2D(texture1, vUv);
+			vec4 texColor2 = texture2D(texture2, vUv);
 
 			// add color
-			// vec4 color = vec4(vec3(1.0), 1.0) * (1.0 - maskShown) + texColor1 * maskShown * maskInterval1 + texColor2 * maskInterval2;
 
 			// mixで混ぜる
-			vec4 color = mix(texColor1, texColor2, sin(time));
-			gl_FragColor = color;
+			vec4 color = mix(texColor1, texColor2, duration);
+			gl_FragColor = mix(color, vec4(1.0), duration2);
 		}
 		`;
 
@@ -110,8 +85,17 @@
 
 	let durationShown = 4;
 	let durationInterval = 4;
+	let t = 0;
+	let mouse = new THREE.Vector2(0, 0);
 
+	function mouseMoved(x, y) {
+    mouse.x =  x - (width / 2);// 原点を中心に持ってくる
+    mouse.y = -y + (height / 2);// 軸を反転して原点を中心に持ってくる
+  }
 
+	window.addEventListener('mousemove',  (e) => {
+		mouseMoved(e.clientX, e.clientY);
+	});
 
 	window.addEventListener('load', () => {
 		width = window.innerWidth;
@@ -128,12 +112,12 @@
 	function init() {
 		const CAMERA_PARAM = {
 			fovy: 60,
-			aspect: 1,
-			near: 10,
-			far: 100,
+			aspect: width / height,
+			near: 0,
+			far: 5,
 			x: 0.0,
 			y: 0.0,
-			z: 2.0,
+			z: 0.0,
 			lookAt: new THREE.Vector3(0.0, 0.0, 0.0)
 		};
 		const RENDERER_PARAM = {
@@ -174,10 +158,9 @@
 		texture2.anisotropy = renderer.capabilities.getMaxAnisotropy();
 		material = new THREE.RawShaderMaterial({
 			uniforms: {
-				timeShown: { type: "f", value: -2.0 },
-				timeInterval: { type: "f", value: 0 },
 				time: { type: "f", value: time },
-				durationShown: { type: "f", value: durationShown },
+				t: { type: "f", value: t },
+				uMouse: { value: mouse },
 				resolution: { type: "v2", value: new THREE.Vector2(width, height) },
 				imageResolution: { type: "v2", value: new THREE.Vector2(1800, 1200) },
 				texture1: { type: "t", value: texture1 },
@@ -191,8 +174,8 @@
 		});
 
 		geometry = new THREE.PlaneBufferGeometry(
-			512,
-			512
+			width,
+			height
 		);
 
 		mesh = new THREE.Mesh(geometry, material);
@@ -208,18 +191,9 @@
 	function animate() {
 		requestAnimationFrame(animate);
 
-		mesh.material.uniforms.timeShown.value < durationShown ?
-			mesh.material.uniforms.timeShown.value = Math.min(mesh.material.uniforms.timeShown.value + width, durationShown) :
-			(mesh.material.uniforms.timeInterval.value = Math.min(mesh.material.uniforms.timeInterval.value + width, durationInterval),
-
-			// mesh.material.uniforms.timeInterval.value === durationInterval && (this.index1 = this.index1 + 1 === this.images.length ? 0 : this.index1 + 1,
-			// this.index2 = this.index2 + 1 === this.images.length ? 0 : this.index2 + 1,
-			// this.uniforms.texture1.value = this.textures[this.index1],
-			// this.uniforms.texture2.value = this.textures[this.index2],
-			mesh.material.uniforms.timeInterval.value = 0)
-
 		time = clock.getElapsedTime();
 		mesh.material.uniforms.time.value = time;
+		mesh.material.uniforms.t.value += 0.01;
 		renderer.render(scene, camera);
 	}
 
