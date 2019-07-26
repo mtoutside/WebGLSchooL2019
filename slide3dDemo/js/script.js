@@ -52,14 +52,25 @@
 					min((resolution.x / resolution.y) / (imageResolution.x / imageResolution.y), 1.0),
 					min((resolution.y / resolution.x) / (imageResolution.y / imageResolution.x), 1.0)
 				);
-			vec4 texColor1 = texture2D(texture1, vUv);
-			vec4 texColor2 = texture2D(texture2, vUv);
+
+		vec2 uv1 = vec2(
+				(vUv.x - (((vUv.x * 2.0) - 1.0) * 0.0333) - (((vUv.x * 2.0) - 1.0) * 0.0333)) * ratio.x + (1.0 - ratio.x) * 0.5,
+				(vUv.y - (((vUv.y * 2.0) - 1.0) * 0.0333) - (((vUv.y * 2.0) - 1.0) * 0.0333)) * ratio.y + (1.0 - ratio.y) * 0.5
+			);
+		vec2 uv2 = vec2(
+				(vUv.x - (((vUv.x * 2.0) - 1.0) * 0.0333)) * ratio.x + (1.0 - ratio.x) * 0.5,
+				(vUv.y - (((vUv.y * 2.0) - 1.0) * 0.0333)) * ratio.y + (1.0 - ratio.y) * 0.5
+			);
+			vec4 texColor1 = texture2D(texture1, uv1);
+			vec4 texColor2 = texture2D(texture2, uv2);
 
 			// add color
 
 			// mixで混ぜる
 			vec4 color = mix(texColor1, texColor2, duration);
 			gl_FragColor = mix(color, vec4(1.0), duration2);
+
+			// gl_FragColor = vec4(vUv.x, vUv.y, 0.0, 1.0);
 		}
 		`;
 
@@ -113,7 +124,7 @@
 		const CAMERA_PARAM = {
 			fovy: 60,
 			aspect: width / height,
-			near: 0,
+			near: 1,
 			far: 5,
 			x: 0.0,
 			y: 0.0,
@@ -180,7 +191,7 @@
 
 		mesh = new THREE.Mesh(geometry, material);
 
-		mesh.position.set(0, 0, -10);
+		mesh.position.set(0, 0, -1);
 
 		scene.add(mesh);
 
