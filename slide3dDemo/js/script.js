@@ -80,8 +80,10 @@
 			float maskInterval2 = smoothstep(0.0, 0.6, maskInterval);
 
 			// add color
-			vec4 color = vec4(vec3(1.0), 1.0) * (1.0 - maskShown) + texColor1 * maskShown * maskInterval1 + texColor2 * maskInterval2;
+			// vec4 color = vec4(vec3(1.0), 1.0) * (1.0 - maskShown) + texColor1 * maskShown * maskInterval1 + texColor2 * maskInterval2;
 
+			// mixで混ぜる
+			vec4 color = mix(texColor1, texColor2, sin(time));
 			gl_FragColor = color;
 		}
 		`;
@@ -117,7 +119,7 @@
 		targetDOM = document.getElementById('webgl');
 		loader = new THREE.TextureLoader();
 		loader.crossOrigin = "";
-		texture1 = loader.load("img/kv02.jpg");
+		texture1 = loader.load("img/kv01.jpg");
 		texture2 = loader.load("img/kv04.jpg");
 
 		init();
