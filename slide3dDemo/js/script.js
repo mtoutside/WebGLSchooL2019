@@ -48,10 +48,10 @@
 		vec2 nmouse = normalize(uMouse);
 		float mouse = clamp(nmouse.x , 0.0, 1.0);
 
-		// float stepShown = clamp(timeShown / durationShown, 0.0, 1.0);
-		// float stepShownEase = circularOut(stepShown);
-		// float stepInterval = clamp(timeInterval / durationInterval, 0.0, 1.0);
-		// float stepIntervalEase = circularOut(stepInterval);
+		float stepShown = clamp(timeShown / durationShown, 0.0, 1.0);
+		float stepShownEase = circularOut(stepShown);
+		float stepInterval = clamp(timeInterval / durationInterval, 0.0, 1.0);
+		float stepIntervalEase = circularOut(stepInterval);
 
 		float phase = t < 0.5 ? t * 2.0 : (t - 0.5) * 2.0;
 
@@ -69,15 +69,21 @@
 				(vUv.x - (((vUv.x * 2.0) - 1.0) * 0.0333)) * ratio.x + (1.0 - ratio.x) * 0.5,
 				(vUv.y - (((vUv.y * 2.0) - 1.0) * 0.0333)) * ratio.y + (1.0 - ratio.y) * 0.5
 			);
-			vec4 texColor1 = texture2D(texture1, uv1);
-			vec4 texColor2 = texture2D(texture2, uv2);
+			vec4 texColor1 = texture2D(texture1, vUv);
+			vec4 texColor2 = texture2D(texture2, vUv);
 
-			// add color
+			// orb
+			vec2 m = vec2(-1.0, 1.0);
+			vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
+			float radius = 4.0 - length(m - p); // whiteout orb
+			vec4 orb = vec4(vec3(radius), 1.0);
+
 
 			// mixで混ぜる
-			vec4 c = t < 0.5 ? texColor1 : texColor2;
-			c = c + (t < 0.5 ? mix(0.0, 1.0, phase) : mix(1.0, 0.0, phase));
+			// vec4 c = t < 0.5 ? texColor1 : texColor2;
+			// c = c + (t < 0.5 ? mix(0.0, 1.0, phase) : mix(1.0, 0.0, phase));
 
+			vec4 c = t < 0.5 ? mix(texColor1, orb, phase) : mix(orb, texColor2, phase);
 			gl_FragColor = c;
 		}
 		`;
@@ -98,7 +104,7 @@
 	let axesHelper;
 
 	let time = 0.0;
-	let images = ["img/kv01.jpg", "img/kv02.jpg", "img/kv03.jpg", "img/kv04.jpg", "img/kv05.jpg", "img/kv06.jpg"];
+	let images = ["img/slide1.jpg", "img/slide2.jpg", "img/slide3.jpg", "img/slide4.jpg"];
 
 	const clock = new THREE.Clock();
 
