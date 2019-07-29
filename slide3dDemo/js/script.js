@@ -27,6 +27,10 @@
 
 		uniform float t;
 		uniform float time;
+		uniform float timeShown;
+		uniform float timeInterval;
+		uniform float durationShown;
+		uniform float durationInterval;
 		uniform vec2 uMouse;
 		uniform vec2 resolution;
 		uniform vec2 imageResolution;
@@ -44,8 +48,12 @@
 		vec2 nmouse = normalize(uMouse);
 		float mouse = clamp(nmouse.x , 0.0, 1.0);
 
-		float duration = clamp(sin(time), 0.0, 1.0);
-		float duration2 = clamp(cos(time), 0.0, 1.0);
+		// float stepShown = clamp(timeShown / durationShown, 0.0, 1.0);
+		// float stepShownEase = circularOut(stepShown);
+		// float stepInterval = clamp(timeInterval / durationInterval, 0.0, 1.0);
+		// float stepIntervalEase = circularOut(stepInterval);
+
+		float phase = t < 0.5 ? t * 2.0 : (t - 0.5) * 2.0;
 
 			// for Interval Images
 			vec2 ratio = vec2(
@@ -67,10 +75,10 @@
 			// add color
 
 			// mixで混ぜる
-			vec4 color = mix(texColor1, texColor2, duration);
-			gl_FragColor = mix(color, vec4(1.0), duration2);
+			vec4 c = t < 0.5 ? texColor1 : texColor2;
+			c = c + (t < 0.5 ? mix(0.0, 1.0, phase) : mix(1.0, 0.0, phase));
 
-			// gl_FragColor = vec4(vUv.x, vUv.y, 0.0, 1.0);
+			gl_FragColor = c;
 		}
 		`;
 
@@ -84,7 +92,7 @@
 	let renderer;
 	let geometry;
 	let material;
-	let mesh;
+	let mesh, mesh2;
 	let loader, texture1, texture2;
 	let controls;
 	let axesHelper;
@@ -114,8 +122,8 @@
 		targetDOM = document.getElementById('webgl');
 		loader = new THREE.TextureLoader();
 		loader.crossOrigin = "";
-		texture1 = loader.load("img/kv01.jpg");
-		texture2 = loader.load("img/kv04.jpg");
+		texture1 = loader.load("img/slide1.jpg");
+		texture2 = loader.load("img/slide2.jpg");
 
 		init();
 	}, false);
@@ -124,11 +132,11 @@
 		const CAMERA_PARAM = {
 			fovy: 60,
 			aspect: width / height,
-			near: 1,
-			far: 5,
+			near: 5,
+			far: 500,
 			x: 0.0,
 			y: 0.0,
-			z: 0.0,
+			z: 10.0,
 			lookAt: new THREE.Vector3(0.0, 0.0, 0.0)
 		};
 		const RENDERER_PARAM = {
@@ -142,11 +150,20 @@
 		scene = new THREE.Scene();
 
 		camera = new THREE.OrthographicCamera(
-			CAMERA_PARAM.fovy,
-			CAMERA_PARAM.aspect,
-			CAMERA_PARAM.near,
-			CAMERA_PARAM.far
+			width / - 2,
+			width / 2,
+			height / 2,
+			height / - 2,
+			5,
+			500
 		);
+		
+		// camera = new THREE.PerspectiveCamera(
+		// 	CAMERA_PARAM.fovy,
+		// 	CAMERA_PARAM.aspect,
+		// 	CAMERA_PARAM.near,
+		// 	CAMERA_PARAM.far
+		// );
 		camera.position.x = CAMERA_PARAM.x;
 		camera.position.y = CAMERA_PARAM.y;
 		camera.position.z = CAMERA_PARAM.z;
@@ -171,9 +188,13 @@
 			uniforms: {
 				time: { type: "f", value: time },
 				t: { type: "f", value: t },
+				timeShown: { type: "f", value: -2 },
+				timeInterval: { type: "f", value: 0 },
+				durationShown: { type: "f", value: durationShown },
+				durationInterval: { type: "f", value: durationInterval },
 				uMouse: { value: mouse },
 				resolution: { type: "v2", value: new THREE.Vector2(width, height) },
-				imageResolution: { type: "v2", value: new THREE.Vector2(1800, 1200) },
+				imageResolution: { type: "v2", value: new THREE.Vector2(512, 512) },
 				texture1: { type: "t", value: texture1 },
 				texture2: { type: "t", value: texture2 },
 			},
@@ -185,17 +206,19 @@
 		});
 
 		geometry = new THREE.PlaneBufferGeometry(
-			width,
-			height
+			2,
+			2,
+			14,
+			14
 		);
 
 		mesh = new THREE.Mesh(geometry, material);
 
-		mesh.position.set(0, 0, -1);
+		mesh.position.set(0, 0, 0);
 
 		scene.add(mesh);
 
-		axesHelper = new THREE.AxesHelper(105.0);
+		axesHelper = new THREE.AxesHelper(405.0);
 		scene.add(axesHelper);
 		animate();
 	}
@@ -204,7 +227,7 @@
 
 		time = clock.getElapsedTime();
 		mesh.material.uniforms.time.value = time;
-		mesh.material.uniforms.t.value += 0.01;
+		mesh.material.uniforms.t.value > 1.0 ? mesh.material.uniforms.t.value = 0.00 : mesh.material.uniforms.t.value += 0.005;
 		renderer.render(scene, camera);
 	}
 
