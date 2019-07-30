@@ -73,7 +73,7 @@
 			vec4 texColor2 = texture2D(texture2, vUv);
 
 			// orb
-			vec2 m = vec2(-1.0, 1.0);
+			vec2 m = vec2(0.5, 0.5);
 			vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
 			float radius = 4.0 - length(m - p); // whiteout orb
 			vec4 orb = vec4(vec3(radius), 1.0);
@@ -91,8 +91,6 @@
 	let width;   
 	let height; 
 	let targetDOM;
-
-
 	let scene;
 	let camera;
 	let renderer;
@@ -102,16 +100,17 @@
 	let loader, texture1, texture2;
 	let controls;
 	let axesHelper;
-
 	let time = 0.0;
 	let images = ["img/slide1.jpg", "img/slide2.jpg", "img/slide3.jpg", "img/slide4.jpg"];
-
+	let texes = [];
 	const clock = new THREE.Clock();
-
 	let durationShown = 4;
 	let durationInterval = 4;
 	let t = 0;
 	let mouse = new THREE.Vector2(0, 0);
+	let run = true;
+	let index = 0;
+	let index2 = 1;
 
 	function mouseMoved(x, y) {
     mouse.x =  x - (width / 2);// 原点を中心に持ってくる
@@ -121,6 +120,13 @@
 	window.addEventListener('mousemove',  (e) => {
 		mouseMoved(e.clientX, e.clientY);
 	});
+	window.addEventListener('keydown', (eve) => {
+		run = eve.key !== 'Escape';
+	}, false);
+	// window.addEventListener('resize', () => {
+	// 	renderer.setSize(window.innerWidth, window.innerHeight);
+	// 	camera.updateProjectionMatrix();
+	// }, false);
 
 	window.addEventListener('load', () => {
 		width = window.innerWidth;
@@ -128,9 +134,8 @@
 		targetDOM = document.getElementById('webgl');
 		loader = new THREE.TextureLoader();
 		loader.crossOrigin = "";
-		texture1 = loader.load("img/slide1.jpg");
-		texture2 = loader.load("img/slide2.jpg");
-
+		// テクスチャ読み込み
+		texes = images.map(img => loader.load(img));
 		init();
 	}, false);
 
@@ -147,11 +152,8 @@
 		};
 		const RENDERER_PARAM = {
 			clearColor: 0x333333,
-			width: width,
-			height: height
-		};
-		const MATERIAL_PARAM = {
-			color: 0xff9933
+			width: 512,
+			height: 512
 		};
 		scene = new THREE.Scene();
 
@@ -163,13 +165,6 @@
 			5,
 			500
 		);
-		
-		// camera = new THREE.PerspectiveCamera(
-		// 	CAMERA_PARAM.fovy,
-		// 	CAMERA_PARAM.aspect,
-		// 	CAMERA_PARAM.near,
-		// 	CAMERA_PARAM.far
-		// );
 		camera.position.x = CAMERA_PARAM.x;
 		camera.position.y = CAMERA_PARAM.y;
 		camera.position.z = CAMERA_PARAM.z;
@@ -182,14 +177,14 @@
 		renderer.setClearColor(new THREE.Color(RENDERER_PARAM.clearColor));
 		renderer.setSize(RENDERER_PARAM.width, RENDERER_PARAM.height);
 		targetDOM.appendChild(renderer.domElement);
-		controls = new THREE.OrbitControls(camera, renderer.domElement);
+		// controls = new THREE.OrbitControls(camera, renderer.domElement);
 
+		for(let texture of texes) {
+			texture.magFilter = THREE.LinearFilter;
+			texture.minFilter = THREE.LinearFilter;
+			texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+		}
 
-		texture1.magFilter = texture2.magFilter = THREE.LinearFilter;
-		texture1.minFilter = texture2.minFilter = THREE.LinearFilter;
-
-		texture1.anisotropy = renderer.capabilities.getMaxAnisotropy();
-		texture2.anisotropy = renderer.capabilities.getMaxAnisotropy();
 		material = new THREE.RawShaderMaterial({
 			uniforms: {
 				time: { type: "f", value: time },
@@ -201,8 +196,8 @@
 				uMouse: { value: mouse },
 				resolution: { type: "v2", value: new THREE.Vector2(width, height) },
 				imageResolution: { type: "v2", value: new THREE.Vector2(512, 512) },
-				texture1: { type: "t", value: texture1 },
-				texture2: { type: "t", value: texture2 },
+				texture1: { type: "t", value: null },
+				texture2: { type: "t", value: null }
 			},
 
 			vertexShader: vertex,
@@ -229,11 +224,32 @@
 		animate();
 	}
 	function animate() {
-		requestAnimationFrame(animate);
+		if(run) {requestAnimationFrame(animate);}
 
 		time = clock.getElapsedTime();
 		mesh.material.uniforms.time.value = time;
-		mesh.material.uniforms.t.value > 1.0 ? mesh.material.uniforms.t.value = 0.00 : mesh.material.uniforms.t.value += 0.005;
+
+			// mesh.material.uniforms.t.value > 1.0 ? mesh.material.uniforms.t.value = 0.0 : mesh.material.uniforms.t.value += 0.005;
+
+			if(mesh.material.uniforms.t.value > 1.0) {
+				mesh.material.uniforms.t.value = 0.0;
+				index++;
+			} else {
+				mesh.material.uniforms.t.value += 0.005
+			}
+
+			mesh.material.uniforms.texture1.value = texes[index];
+			mesh.material.uniforms.texture2.value = texes[index + 1];
+
+		if(index + 1 >= texes.length) {
+			index = 0;
+		}
+		// while(index2 < texes.length) {
+		// 	mesh.material.uniforms.texture1.value = texes[0];
+		// 	mesh.material.uniforms.texture2.value = texes[3];
+		// }
+		// 	mesh.material.uniforms.texture1.value = texes[0];
+		// 	mesh.material.uniforms.texture2.value = texes[3];
 		renderer.render(scene, camera);
 	}
 
