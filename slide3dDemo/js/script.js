@@ -141,8 +141,10 @@
 
 	function init() {
 		const CAMERA_PARAM = {
-			fovy: 60,
-			aspect: width / height,
+			left: width / - 2,
+			right: width / 2,
+			top: height / 2,
+			bottom: height / - 2,
 			near: 5,
 			far: 500,
 			x: 0.0,
@@ -157,19 +159,21 @@
 		};
 		scene = new THREE.Scene();
 
+		// camera
 		camera = new THREE.OrthographicCamera(
-			width / - 2,
-			width / 2,
-			height / 2,
-			height / - 2,
-			5,
-			500
+			CAMERA_PARAM.left,
+			CAMERA_PARAM.right,
+			CAMERA_PARAM.top,
+			CAMERA_PARAM.bottom,
+			CAMERA_PARAM.near,
+			CAMERA_PARAM.far
 		);
 		camera.position.x = CAMERA_PARAM.x;
 		camera.position.y = CAMERA_PARAM.y;
 		camera.position.z = CAMERA_PARAM.z;
 		camera.lookAt(CAMERA_PARAM.lookAt);
 
+		// render
 		renderer = new THREE.WebGLRenderer({
 			antialias: false
 		});
@@ -179,12 +183,14 @@
 		targetDOM.appendChild(renderer.domElement);
 		// controls = new THREE.OrbitControls(camera, renderer.domElement);
 
+		// texture準備
 		for(let texture of texes) {
 			texture.magFilter = THREE.LinearFilter;
 			texture.minFilter = THREE.LinearFilter;
 			texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
 		}
 
+		// material
 		material = new THREE.RawShaderMaterial({
 			uniforms: {
 				time: { type: "f", value: time },
@@ -199,7 +205,6 @@
 				texture1: { type: "t", value: null },
 				texture2: { type: "t", value: null }
 			},
-
 			vertexShader: vertex,
 			fragmentShader: fragment,
 			transparent: true,
@@ -214,13 +219,12 @@
 		);
 
 		mesh = new THREE.Mesh(geometry, material);
-
 		mesh.position.set(0, 0, 0);
-
 		scene.add(mesh);
 
-		axesHelper = new THREE.AxesHelper(405.0);
-		scene.add(axesHelper);
+		// axesHelper = new THREE.AxesHelper(405.0);
+		// scene.add(axesHelper);
+
 		animate();
 	}
 	function animate() {
@@ -244,12 +248,6 @@
 		if(index + 1 >= texes.length) {
 			index = 0;
 		}
-		// while(index2 < texes.length) {
-		// 	mesh.material.uniforms.texture1.value = texes[0];
-		// 	mesh.material.uniforms.texture2.value = texes[3];
-		// }
-		// 	mesh.material.uniforms.texture1.value = texes[0];
-		// 	mesh.material.uniforms.texture2.value = texes[3];
 		renderer.render(scene, camera);
 	}
 
